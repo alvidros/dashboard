@@ -252,11 +252,11 @@
           <div style="display:flex; align-items:center; gap:12px;">
             <span class="user-tag" id="currentUserBadge">👤 Usuário: Admin (ADM)</span>
             <div class="view-mode-selector">
-              <button class="view-btn active" id="btnAutoView" onclick="setDeviceView('auto')">Auto</button>
-              <button class="view-btn" id="btnDeskView" onclick="setDeviceView('desktop')">💻 PC</button>
-              <button class="view-btn" id="btnMobView" onclick="setDeviceView('mobile')">📱 Celular</button>
+              <button type="button" class="view-btn active" id="btnAutoView" onclick="setDeviceView('auto')">Auto</button>
+              <button type="button" class="view-btn" id="btnDeskView" onclick="setDeviceView('desktop')">💻 PC</button>
+              <button type="button" class="view-btn" id="btnMobView" onclick="setDeviceView('mobile')">📱 Celular</button>
             </div>
-            <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="logout()">Sair</button>
+            <button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="logout()">Sair</button>
           </div>
         </div>
 
@@ -281,7 +281,7 @@
           <div id="comparePanelClean" class="compare-panel-clean">
             <div class="compare-header-clean">
               <div class="compare-title-clean">🏁 Análise de Corrida Processo por Processo</div>
-              <button class="btn btn-danger" style="padding: 4px 10px; font-size:0.72rem;" onclick="clearSelectedCompare()">Limpar Seleção</button>
+              <button type="button" class="btn btn-danger" style="padding: 4px 10px; font-size:0.72rem;" onclick="clearSelectedCompare()">Limpar Seleção</button>
             </div>
             <div id="compareContentClean"></div>
           </div>
@@ -321,14 +321,14 @@
                 <label>Observação Geral do Pedido (Opcional)</label>
                 <textarea id="newPedObs" class="form-control" rows="3" placeholder="Observações do pedido..."></textarea>
               </div>
-              <button class="btn btn-primary" onclick="createNewOrderFromForm()">Cadastrar Novo Pedido</button>
+              <button type="button" class="btn btn-primary" onclick="createNewOrderFromForm()">Cadastrar Novo Pedido</button>
             </div>
           </div>
 
           <div class="card-pro" id="editorPanel" style="max-width: 850px; display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h3 style="font-size: 0.95rem; font-weight: 800;" id="editingOrderTitle">Editando Pedido #</h3>
-              <button class="btn btn-danger" id="btnDeleteWholeOrder" onclick="deleteWholeCurrentOrder()">💥 Excluir Pedido Completo (ADM)</button>
+              <button type="button" class="btn btn-danger" id="btnDeleteWholeOrder" onclick="deleteWholeCurrentOrder()">💥 Excluir Pedido Completo (ADM)</button>
             </div>
 
             <div class="form-grid">
@@ -354,7 +354,7 @@
               <div class="card-pro" id="userManagementCard">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                   <div class="card-title" style="margin-bottom:0;">👥 Gerenciador de Usuários</div>
-                  <button class="btn" style="background:var(--border-subtle); font-size:0.72rem; padding:4px 8px;" onclick="toggleShowAllPasswords()">👁️ <span id="lblShowPasses">Revelar Senhas</span></button>
+                  <button type="button" class="btn" style="background:var(--border-subtle); font-size:0.72rem; padding:4px 8px;" onclick="toggleShowAllPasswords()">👁️ <span id="lblShowPasses">Revelar Senhas</span></button>
                 </div>
                 <div id="userListContainer"></div>
 
@@ -390,8 +390,8 @@
                   </div>
                 </div>
                 <div style="display:flex; gap:8px;">
-                  <button class="btn btn-primary" onclick="saveUserFromForm()">Salvar Usuário</button>
-                  <button class="btn" style="background:var(--border-subtle);" onclick="resetUserForm()">Cancelar</button>
+                  <button type="button" class="btn btn-primary" onclick="saveUserFromForm()">Salvar Usuário</button>
+                  <button type="button" class="btn" style="background:var(--border-subtle);" onclick="resetUserForm()">Cancelar</button>
                 </div>
               </div>
 
@@ -401,7 +401,7 @@
                   <div style="display:flex; align-items:center; gap:6px;">
                     <label style="font-size:0.72rem; font-weight:700;">Filtrar Data:</label>
                     <input type="date" id="logDateFilter" class="form-control" style="padding:2px 6px; font-size:0.75rem; width:130px;" onchange="renderLogs()">
-                    <button class="btn" style="padding:2px 6px; font-size:0.7rem; background:var(--border-subtle);" onclick="clearLogDateFilter()">Limpar</button>
+                    <button type="button" class="btn" style="padding:2px 6px; font-size:0.7rem; background:var(--border-subtle);" onclick="clearLogDateFilter()">Limpar</button>
                   </div>
                 </div>
                 <div class="logs-box" id="logsContainer"></div>
@@ -414,7 +414,7 @@
                 <div id="processManagerList"></div>
                 <div style="display:flex; gap:8px; margin-top:12px;">
                   <input type="text" id="newProcessLabel" class="form-control" placeholder="Nome do novo processo..." style="flex:1;">
-                  <button class="btn btn-primary" onclick="addNewProcessStep()">➕ Adicionar</button>
+                  <button type="button" class="btn btn-primary" onclick="addNewProcessStep()">➕ Adicionar</button>
                 </div>
               </div>
 
@@ -445,7 +445,7 @@
           <option value="min">Minutos</option>
           <option value="hour">Horas</option>
         </select>
-        <button class="btn" style="background: var(--border-subtle); padding: 4px 10px;" onclick="triggerManualSync()">🔄 Sincronizar Agora</button>
+        <button type="button" class="btn" style="background: var(--border-subtle); padding: 4px 10px;" onclick="triggerManualSync()">🔄 Sincronizar Agora</button>
       </div>
     </footer>
   </div>
@@ -454,7 +454,7 @@
     <div class="obs-popover-card">
       <div class="obs-popover-title">
         <span id="obsPopoverHeader">Observação</span>
-        <button class="obs-popover-close" onclick="forceCloseObsPopover()">✕</button>
+        <button type="button" class="obs-popover-close" onclick="forceCloseObsPopover()">✕</button>
       </div>
       <div class="obs-popover-body" id="obsPopoverText"></div>
     </div>
@@ -611,6 +611,36 @@
       }
     }
 
+    async function deleteOrderFromSheets(pedNumber) {
+      const url = getScriptUrl();
+      if (!url) return;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'deleteOrder', pedido: pedNumber })
+        });
+      } catch (e) {
+        console.error("Erro ao excluir pedido no Sheets:", e);
+      }
+    }
+
+    async function postUsersToSheets() {
+      const url = getScriptUrl();
+      if (!url) return;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveUsers', users: usersDb })
+        });
+      } catch (e) {
+        console.error("Erro ao salvar usuários no Sheets:", e);
+      }
+    }
+
     function togglePasswordVisibility(inputId, btn) {
       const field = document.getElementById(inputId);
       if (field.type === 'password') { field.type = 'text'; btn.innerText = '🙈'; }
@@ -705,7 +735,7 @@
       navItems.forEach(item => {
         if (activeUser.perms.includes(item.id)) {
           let li = document.createElement('li');
-          li.innerHTML = `<button class="nav-btn ${isFirst ? 'active' : ''}" onclick="switchTab('${item.id}', this, '${item.title}', '${item.desc}')">${item.icon}${item.title}</button>`;
+          li.innerHTML = `<button type="button" class="nav-btn ${isFirst ? 'active' : ''}" onclick="switchTab('${item.id}', this, '${item.title}', '${item.desc}')">${item.icon}${item.title}</button>`;
           menu.appendChild(li);
           if (isFirst) { switchTab(item.id, li.querySelector('button'), item.title, item.desc); isFirst = false; }
         }
@@ -825,7 +855,7 @@
         let card = document.createElement('div');
         card.className = 'card-pro';
 
-        let pedObsIcon = p.obs ? `<button class="note-icon-btn" onclick="openObsPopover('Observação do Pedido #${p.pedido}', '${escapeJsString(p.obs)}')">?</button>` : '';
+        let pedObsIcon = p.obs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Observação do Pedido #${p.pedido}', '${escapeJsString(p.obs)}')">?</button>` : '';
 
         let accumulatedMins = calcTotalOrderExecutionTime(p);
         let leadTimeStr = accumulatedMins > 0 ? formatMinsToHHMM(accumulatedMins) : "Em andamento";
@@ -854,7 +884,7 @@
             });
 
             let compiledObs = compileStepObsText(sData.slots, stepObj.label);
-            let stepObsIcon = compiledObs ? `<button class="note-icon-btn" onclick="openObsPopover('Obs. ${stepObj.label} - Pedido #${p.pedido}', '${escapeJsString(compiledObs)}')">?</button>` : '';
+            let stepObsIcon = compiledObs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Obs. ${stepObj.label} - Pedido #${p.pedido}', '${escapeJsString(compiledObs)}')">?</button>` : '';
 
             html += `
               <div class="flow-node">
@@ -896,7 +926,7 @@
         let totalExecutionMins = calcTotalOrderExecutionTime(p);
         let totalLeadTime = formatMinsToHHMM(totalExecutionMins);
 
-        let pedObsIcon = p.obs ? `<button class="note-icon-btn" onclick="openObsPopover('Observação do Pedido #${p.pedido}', '${escapeJsString(p.obs)}')">?</button>` : '';
+        let pedObsIcon = p.obs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Observação do Pedido #${p.pedido}', '${escapeJsString(p.obs)}')">?</button>` : '';
         let isChecked = selectedComparePeds.includes(p.pedido) ? "checked" : "";
 
         let html = `
@@ -926,7 +956,7 @@
             });
 
             let compiledObs = compileStepObsText(sData.slots, stepObj.label);
-            let stepObsIcon = compiledObs ? `<button class="note-icon-btn" onclick="openObsPopover('Obs. ${stepObj.label} - Pedido #${p.pedido}', '${escapeJsString(compiledObs)}')">?</button>` : '';
+            let stepObsIcon = compiledObs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Obs. ${stepObj.label} - Pedido #${p.pedido}', '${escapeJsString(compiledObs)}')">?</button>` : '';
 
             html += `
               <div class="flow-node">
@@ -1083,7 +1113,7 @@
           </div>
           <div>${slotsHtml || '<small style="color:var(--text-faint);">Nenhum horário registrado.</small>'}</div>
           <div class="editor-actions">
-            <button class="btn-save-step" onclick="saveSingleStep('${proj.pedido}', '${k}')">💾 Salvar Processo</button>
+            <button type="button" class="btn-save-step" onclick="saveSingleStep('${proj.pedido}', '${k}')">💾 Salvar Processo</button>
           </div>
         `;
         container.appendChild(box);
@@ -1181,6 +1211,7 @@
         if (idx !== -1) {
           db.splice(idx, 1);
           addLog(`EXCLUIU COMPLETAMENTE o Pedido #${ped}`);
+          deleteOrderFromSheets(ped);
           populateOrderSelect();
           document.getElementById('editorPanel').style.display = "none";
           renderDashboard();
@@ -1202,8 +1233,8 @@
             <div style="font-size:0.72rem; color:var(--accent);">Senha: <code>${passDisplay}</code></div>
           </div>
           <div>
-            <button class="btn" style="padding:2px 6px;" onclick="editUser(${u.id})">✏️ Editar</button>
-            <button class="btn btn-danger" style="padding:2px 6px;" onclick="deleteUser(${u.id})" ${u.id === 1 ? 'disabled' : ''}>🗑️ Excluir</button>
+            <button type="button" class="btn" style="padding:2px 6px;" onclick="editUser(${u.id})">✏️ Editar</button>
+            <button type="button" class="btn btn-danger" style="padding:2px 6px;" onclick="deleteUser(${u.id})" ${u.id === 1 ? 'disabled' : ''}>🗑️ Excluir</button>
           </div>
         `;
         box.appendChild(row);
@@ -1247,6 +1278,7 @@
       }
 
       localStorage.setItem('alvidros_users', JSON.stringify(usersDb));
+      postUsersToSheets();
       resetUserForm();
       initLoginSelect();
       renderUsersList();
@@ -1258,6 +1290,7 @@
       if (confirm("Excluir este usuário?")) {
         usersDb = usersDb.filter(u => u.id !== id);
         localStorage.setItem('alvidros_users', JSON.stringify(usersDb));
+        postUsersToSheets();
         initLoginSelect();
         renderUsersList();
       }
@@ -1274,9 +1307,9 @@
         row.innerHTML = `
           <span>${idx + 1}. <strong>${st.label}</strong> <small style="color:var(--text-faint);">${st.key}</small></span>
           <div class="process-actions">
-            <button class="btn" style="padding:2px 6px;" onclick="moveProcessStep(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>⬆️</button>
-            <button class="btn" style="padding:2px 6px;" onclick="moveProcessStep(${idx}, 1)" ${idx === stepConfig.length - 1 ? 'disabled' : ''}>⬇️</button>
-            <button class="btn btn-danger" style="padding:2px 6px;" onclick="removeProcessStep(${idx})" ${stepConfig.length <= 2 ? 'disabled' : ''}>🗑️</button>
+            <button type="button" class="btn" style="padding:2px 6px;" onclick="moveProcessStep(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>⬆️</button>
+            <button type="button" class="btn" style="padding:2px 6px;" onclick="moveProcessStep(${idx}, 1)" ${idx === stepConfig.length - 1 ? 'disabled' : ''}>⬇️</button>
+            <button type="button" class="btn btn-danger" style="padding:2px 6px;" onclick="removeProcessStep(${idx})" ${stepConfig.length <= 2 ? 'disabled' : ''}>🗑️</button>
           </div>
         `;
         container.appendChild(row);
