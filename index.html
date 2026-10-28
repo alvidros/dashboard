@@ -69,7 +69,7 @@
       <form id="loginForm">
         <div class="form-group">
           <label>Usuário / Nome</label>
-          <input type="text" id="loginUser" required placeholder="Digite seu usuário">
+          <input type="text" id="loginUser" required placeholder="Ex: Admin ou Operador Produção">
         </div>
         <div class="form-group">
           <label>Senha</label>
@@ -171,9 +171,11 @@
       <table>
         <thead>
           <tr>
-            <th>Nome / Usuário</th>
+            <th>ID</th>
+            <th>Nome</th>
             <th>Senha</th>
             <th>Perfil</th>
+            <th>Permissões</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -200,25 +202,23 @@
   </div>
 
   <script>
-    // URL DO SEU GOOGLE APPS SCRIPT
+    // INSIRA AQUI A URL DO SEU GOOGLE APPS SCRIPT
     const SCRIPT_URL = "SUA_URL_DO_WEB_APP_AQUI";
 
     let state = {
       currentUser: null,
       orders: [],
       users: [],
-      steps: ['Início', 'Corte', 'Lapidação', 'Têmpera', 'Expedição'],
+      steps: [],
       logs: []
     };
 
-    // INICIALIZAÇÃO
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       loadDataFromSheets();
-      setInterval(loadDataFromSheets, 30000); // Auto-sync a cada 30 segundos
+      setInterval(loadDataFromSheets, 30000);
     });
 
-    // CARREGAR DADOS VIA GET
     async function loadDataFromSheets() {
       if (SCRIPT_URL.includes("SUA_URL_DO_WEB_APP_AQUI")) {
         setSyncStatus(false, "URL do Apps Script não configurada");
@@ -232,9 +232,9 @@
 
         if (data.status === 'success') {
           state.orders = data.orders || [];
-          if (data.users && data.users.length) state.users = data.users;
-          if (data.steps && data.steps.length) state.steps = data.steps;
-          if (data.logs) state.logs = data.logs;
+          state.users = data.users || [];
+          state.steps = data.steps || [];
+          state.logs = data.logs || [];
 
           renderAll();
           setSyncStatus(true, "Sincronizado");
@@ -252,15 +252,14 @@
       document.getElementById('syncText').innerText = msg;
     }
 
-    // AUTENTICAÇÃO
     function handleLogin(e) {
       e.preventDefault();
-      const userVal = document.getElementById('loginUser').value.trim();
+      const userVal = document.getElementById('loginUser').value.trim().toLowerCase();
       const passVal = document.getElementById('loginPass').value.trim();
 
       const found = state.users.find(u => 
-        (u.nome.toLowerCase() === userVal.toLowerCase() || String(u.id) === userVal) && 
-        u.senha === passVal
+        (String(u.nome).toLowerCase() === userVal || String(u.id) === userVal) && 
+        String(u.senha) === passVal
       );
 
       if (found) {
@@ -304,7 +303,6 @@
       if (target) target.classList.add('active');
     }
 
-    // RENDERIZAÇÃO GERAL
     function renderAll() {
       renderAndamento();
       renderConcluidos();
@@ -358,7 +356,6 @@
       container.innerHTML = html;
     }
 
-    // EDITOR DE PEDIDOS
     function renderStepsEditor(orderData = null) {
       const container = document.getElementById('stepsContainer');
       container.innerHTML = '';
@@ -455,7 +452,7 @@
 
         const res = await response.json();
         if (res.status === 'success') {
-          alert('Pedido salvo na planilha com sucesso!');
+          alert('Pedido salvo com sucesso!');
           loadDataFromSheets();
         } else {
           alert('Erro ao salvar: ' + res.message);
@@ -486,7 +483,7 @@
 
         const res = await response.json();
         if (res.status === 'success') {
-          alert('Pedido excluído com sucesso!');
+          alert('Pedido excluído!');
           document.getElementById('orderForm').reset();
           renderStepsEditor();
           loadDataFromSheets();
@@ -499,7 +496,6 @@
       }
     }
 
-    // GERENCIADOR DE ETAPAS E CONFIGURAÇÕES
     function renderStepsConfig() {
       const container = document.getElementById('stepsConfigList');
       container.innerHTML = '';
@@ -552,28 +548,30 @@
 
         const res = await response.json();
         if (res.status === 'success') {
-          alert('Etapas salvas na planilha com sucesso!');
+          alert('Etapas salvas com sucesso!');
           loadDataFromSheets();
         } else {
           alert('Erro: ' + res.message);
         }
       } catch (err) {
         console.error(err);
-        alert('Falha na conexão com o Google Sheets.');
+        alert('Falha na conexão.');
       }
     }
 
-    // GERENCIADOR DE USUÁRIOS
     function renderUsersTable() {
       const tbody = document.getElementById('usersTableBody');
       tbody.innerHTML = '';
 
       state.users.forEach((u, idx) => {
+        const permsText = Array.isArray(u.permissoes) ? u.permissoes.join(', ') : u.permissoes;
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td><strong>${u.id}</strong></td>
           <td>${u.nome}</td>
           <td>${u.senha}</td>
           <td>${u.perfil}</td>
+          <td><small>${permsText}</small></td>
           <td><button type="button" class="btn btn-sm btn-danger" onclick="removeUser(${idx})">Excluir</button></td>
         `;
         tbody.appendChild(tr);
@@ -640,17 +638,20 @@
       }
     }
 
-    // RENDERING LOGS
     function renderLogs() {
       const container = document.getElementById('logsContainer');
-      if (!state.logs.length) {
+      if (!state.logs || !state.logs.length) {
         container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Nenhum registro de log encontrado.</p>';
         return;
       }
 
       let html = '<table style="font-size: 0.8rem;"><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th></tr></thead><tbody>';
       state.logs.slice().reverse().forEach(l => {
-        html += `<tr><td>${l.dataHora}</td><td><strong>${l.usuario}</strong></td><td>${l.acao}</td></tr>`;
+        const dataHora = l.dataHora || l.data_hora || l.Data_Hora || '-';
+        const usuario = l.usuario || l.Usuario || l.user || 'Sistema';
+        const acao = l.acao || l.Acao || l.action || '-';
+
+        html += `<tr><td>${dataHora}</td><td><strong>${usuario}</strong></td><td>${acao}</td></tr>`;
       });
       html += '</tbody></table>';
       container.innerHTML = html;
