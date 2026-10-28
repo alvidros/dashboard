@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AL Vidros - Gestão de Lead Time</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+      --accent: #0284c7;
+      --accent-light: #e0f2fe;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --warning: #d97706;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+    body { background-color: var(--bg-page); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+    #loginScreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #1e293b; display: flex; justify-content: center; align-items: center; z-index: 9999;
+    }
+    .login-box {
+      background: #ffffff; padding: 36px; border-radius: 16px; width: 100%; max-width: 400px;
+      box-shadow: var(--shadow-md); text-align: center;
+    }
+    .login-logo { width: 120px; height: auto; margin-bottom: 12px; border-radius: 8px; object-fit: contain; }
+
+    .password-input-wrapper { position: relative; display: flex; align-items: center; }
+    .toggle-password-btn { position: absolute; right: 10px; background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); }
+
+    #dashboardApp { display: none; flex-direction: column; min-height: 100vh; }
+    .app-container { display: flex; flex: 1; min-height: calc(100vh - 48px); }
+
+    .app-container.mobile-mode {
+      max-width: 390px !important; margin: 20px auto !important; border: 10px solid #1e293b;
+      border-radius: 36px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); overflow: hidden;
+      flex-direction: column; height: 800px;
+    }
+    .app-container.mobile-mode aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); padding: 12px; }
+    .app-container.mobile-mode main { padding: 16px; }
+
+    aside { width: 250px; background: #ffffff; border-right: 1px solid var(--border-color); padding: 24px 16px; display: flex; flex-direction: column; flex-shrink: 0; }
+    .brand-header { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 20px; }
+    .brand-logo-img { height: 42px; width: auto; object-fit: contain; border-radius: 6px; }
+    .brand-title { font-size: 0.95rem; font-weight: 800; color: var(--text-main); }
+    .brand-sub { font-size: 0.65rem; font-weight: 700; color: var(--text-faint); text-transform: uppercase; }
+
+    .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .nav-btn {
+      background: transparent; border: 1px solid transparent; text-align: left; padding: 10px 14px;
+      font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: var(--radius);
+      display: flex; align-items: center; gap: 12px; width: 100%; transition: all 0.15s ease;
+    }
+    .nav-btn svg { width: 18px; height: 18px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+    .nav-btn:hover { color: var(--text-main); background-color: var(--border-subtle); }
+    .nav-btn.active { background-color: #f0f9ff; color: var(--accent); font-weight: 700; border-color: #bae6fd; }
+    .nav-btn.active svg { stroke: var(--accent); }
+
+    main { flex: 1; padding: 28px 36px; width: 100%; overflow-y: auto; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-title { font-size: 1.3rem; font-weight: 800; color: var(--text-main); }
+    .page-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    .user-tag { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #334155; }
+
+    .view-mode-selector { display: flex; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 3px; }
+    .view-btn { background: none; border: none; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 6px; }
+    .view-btn.active { background: var(--text-main); color: #ffffff; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card-pro { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow-sm); width: 100%; position: relative; }
+    .card-title { font-size: 0.85rem; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 14px; }
+
+    .order-card-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .order-num { font-size: 0.92rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
+    .order-client { font-size: 0.82rem; color: var(--text-muted); margin-left: 6px; }
+    .badge-status { background: #fffbe2; color: #b45309; border: 1px solid #fef3c7; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+    .badge-status.success { background: #f0fdf4; color: var(--success); border-color: #bbf7d0; }
+
+    .total-badges-container { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .total-time-badge { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.73rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+    .total-extra-badge { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; font-size: 0.73rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+    .total-off-badge { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; font-size: 0.73rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+
+    .flow-strip { display: flex; align-items: flex-start; overflow-x: auto; padding: 12px 0; width: 100%; gap: 16px; }
+    .flow-node { display: flex; flex-direction: column; align-items: flex-start; z-index: 2; position: relative; min-width: 240px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; }
+    .flow-header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 6px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; }
+    .flow-label { font-size: 0.8rem; font-weight: 800; color: var(--text-main); }
+    .flow-time-item { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 4px; width: 100%; }
+    
+    .sector-breakdown-box { width: 100%; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-subtle); font-size: 0.68rem; font-weight: 700; display: flex; flex-direction: column; gap: 2px; }
+    .step-duration-tag { color: var(--accent); background: #f0f9ff; padding: 2px 6px; border-radius: 4px; }
+    .step-extra-tag { color: #c2410c; background: #fff7ed; padding: 2px 6px; border-radius: 4px; }
+    .step-off-tag { color: #b91c1c; background: #fef2f2; padding: 2px 6px; border-radius: 4px; }
+
+    .tag-extra { font-size: 0.65rem; font-weight: 800; color: #c2410c; background: #fff7ed; border: 1px solid #ffedd5; padding: 1px 5px; border-radius: 4px; margin-left: 4px; display: inline-block; }
+    .tag-fora-expediente { font-size: 0.65rem; font-weight: 800; color: #b91c1c; background: #fef2f2; border: 1px solid #fca5a5; padding: 1px 5px; border-radius: 4px; margin-left: 4px; display: inline-block; }
+
+    .note-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #0284c7; color: #ffffff; font-size: 0.65rem; font-weight: 800; cursor: pointer; border: none; flex-shrink: 0; }
+
+    .obs-popover-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 10000; }
+    .obs-popover-card { background: #0f172a; color: #ffffff; border-radius: 12px; padding: 18px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid #334155; position: relative; }
+    .obs-popover-title { font-size: 0.85rem; font-weight: 800; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .obs-popover-close { background: none; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; font-weight: 700; }
+    .obs-popover-body { font-size: 0.8rem; color: #e2e8f0; line-height: 1.45; word-break: break-word; max-height: 250px; overflow-y: auto; white-space: pre-wrap; }
+
+    .editor-step-box { background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 14px; width: 100%; }
+    .editor-step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
+    .editor-step-title { font-size: 0.9rem; font-weight: 800; color: var(--accent); }
+    
+    .slot-row { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+    .slot-row-inputs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .slot-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); width: 50px; }
+    
+    .editor-input-date { width: 135px; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; }
+    .editor-input-time { width: 95px; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; }
+    .editor-input-obs { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; background: #ffffff; margin-top: 4px; }
+
+    .slot-fixed-view { display: flex; flex-direction: column; gap: 6px; background: #f0f9ff; border: 1px solid #bae6fd; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.82rem; font-weight: 600; color: #0369a1; }
+    .slot-fixed-header { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .btn-edit-slot { background: #e0f2fe; color: #0284c7; border: 1px solid #7dd3fc; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+
+    .editor-actions { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; }
+    .btn-save-step { background: #0f172a; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
+    .btn-save-step:disabled, .btn:disabled { opacity: 0.5; cursor: not-allowed !important; pointer-events: none; }
+    .btn-add-slot { background: var(--accent-light); color: var(--accent); border: 1px solid #bae6fd; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+
+    .accordion-btn { width: 100%; text-align: left; background: var(--border-subtle); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; color: var(--accent); cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .accordion-content { display: none; padding-top: 12px; }
+    .accordion-content.open { display: block; }
+
+    .process-item-row { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 0.82rem; font-weight: 600; }
+    .logs-box { max-height: 220px; overflow-y: auto; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.75rem; }
+    .log-entry { margin-bottom: 4px; border-bottom: 1px dashed #1e293b; padding-bottom: 2px; }
+
+    .calendar-wrapper { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: #ffffff; margin-top: 10px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; text-align: center; }
+    .calendar-header-day { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); padding: 4px 0; }
+    .calendar-day-cell { padding: 6px 2px; border-radius: 6px; font-size: 0.75rem; border: 1px solid #f1f5f9; cursor: pointer; min-height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .calendar-day-cell.weekend { background: #f1f5f9; color: var(--text-faint); cursor: default; }
+    .calendar-day-cell.holiday { background: #fef2f2; border-color: #fca5a5; color: var(--danger); font-weight: 800; }
+    .calendar-day-cell.empty { background: transparent; border: none; cursor: default; }
+
+    .settings-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 900px) { .settings-layout { grid-template-columns: 1fr; } }
+
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; text-align: left; }
+    .form-group label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; color: var(--text-main); }
+    .form-control { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; outline: none; background: #ffffff; }
+
+    .btn { padding: 8px 14px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-primary { background: var(--text-main); color: #ffffff; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+
+    footer { height: 48px; background: #ffffff; border-top: 1px solid var(--border-color); padding: 0 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE LOGIN -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <img src="images.png" alt="AL Vidros Logo" class="login-logo" onerror="this.style.display='none'">
+      <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; color: var(--text-main);">AL VIDROS</h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Acesso ao Sistema Lead Time</p>
+
+      <form onsubmit="handleMainLogin(event)">
+        <div class="form-group">
+          <label>Selecione o Usuário</label>
+          <select id="loginUserSelect" class="form-control" style="padding: 10px;" required></select>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="mainPassInput" class="form-control" style="padding: 10px; padding-right: 36px;" placeholder="Senha de acesso..." required autofocus>
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('mainPassInput', this)">👁️</button>
+          </div>
+        </div>
+        <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 0.85rem; margin-top: 6px;">Entrar no Sistema</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PRINCIPAL -->
+  <div id="dashboardApp">
+    <div class="app-container" id="appContainer">
+      <aside>
+        <div class="brand-header">
+          <img src="images.png" alt="AL Vidros Logo" class="brand-logo-img" onerror="this.style.display='none'">
+          <div>
+            <div class="brand-title">AL VIDROS</div>
+            <div class="brand-sub">Lead Time Tracker</div>
+          </div>
+        </div>
+        <ul class="nav-menu" id="sideNavMenu"></ul>
+      </aside>
+
+      <main>
+        <div class="top-bar">
+          <div>
+            <h1 class="page-title" id="pageTitleText">Projetos em Andamento</h1>
+            <p class="page-desc" id="pageDescText">Acompanhamento em tempo real dos pedidos ativos</p>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span class="user-tag" id="currentUserBadge">👤 Usuário: Admin (ADM)</span>
+            <div class="view-mode-selector">
+              <button type="button" class="view-btn active" id="btnAutoView" onclick="setDeviceView('auto')">Auto</button>
+              <button type="button" class="view-btn" id="btnDeskView" onclick="setDeviceView('desktop')">💻 PC</button>
+              <button type="button" class="view-btn" id="btnMobView" onclick="setDeviceView('mobile')">📱 Celular</button>
+            </div>
+            <button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="logout()">Sair</button>
+          </div>
+        </div>
+
+        <!-- ABA 1: EM ANDAMENTO -->
+        <div id="tab-andamento" class="tab-content active">
+          <div style="margin-bottom: 14px;">
+            <input type="text" id="searchActiveInput" class="form-control" placeholder="🔍 Pesquisar projeto por N° do pedido ou cliente..." oninput="renderDashboard()">
+          </div>
+          <div id="activeOrdersList"></div>
+        </div>
+
+        <!-- ABA 2: CONSULTA CONCLUÍDOS -->
+        <div id="tab-concluidos" class="tab-content">
+          <div class="card-pro">
+            <div class="card-title">🔍 Filtros & Obras Concluídas</div>
+            <div class="form-grid">
+              <div><label>N° do Pedido</label><input type="text" id="filterPedDone" class="form-control" placeholder="Filtrar por pedido..." oninput="renderCompletedCards()"></div>
+              <div><label>Nome do Cliente</label><input type="text" id="filterCliDone" class="form-control" placeholder="Filtrar por cliente..." oninput="renderCompletedCards()"></div>
+            </div>
+          </div>
+          <div id="completedOrdersList"></div>
+        </div>
+
+        <!-- ABA 3: EDITOR DE REGISTROS -->
+        <div id="tab-atualizar" class="tab-content">
+          <div class="card-pro" style="max-width: 850px;">
+            <div class="card-title">📍 Selecionar Pedido para Edição</div>
+            
+            <div class="form-group">
+              <label>Escolher Pedido Em Andamento</label>
+              <select id="selectOrderToEdit" class="form-control" onchange="handleSelectOrderToEdit()">
+                <option value="">-- Selecione na lista --</option>
+              </select>
+            </div>
+
+            <button type="button" class="accordion-btn" onclick="toggleNewOrderAccordion()">
+              <span>➕ Criar Novo Pedido (Clique para abrir/fechar)</span>
+              <span id="accordionArrow">▼</span>
+            </button>
+
+            <div id="newOrderAccordionContent" class="accordion-content">
+              <form onsubmit="createNewOrderFromForm(event)">
+                <div class="form-grid">
+                  <div>
+                    <label>Número do Pedido</label>
+                    <input type="text" id="newPedNumber" class="form-control" placeholder="Ex: 1054" required>
+                  </div>
+                  <div>
+                    <label>Nome do Cliente</label>
+                    <input type="text" id="newPedClient" class="form-control" placeholder="Ex: Esquadrias Silva" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Observação Geral do Pedido (Opcional)</label>
+                  <textarea id="newPedObs" class="form-control" rows="3" placeholder="Observações do pedido..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btnCreateNewOrder">Cadastrar Novo Pedido</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card-pro" id="editorPanel" style="max-width: 850px; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="font-size: 0.95rem; font-weight: 800;" id="editingOrderTitle">Editando Pedido #</h3>
+              <button type="button" class="btn btn-danger" id="btnDeleteWholeOrder" onclick="deleteWholeCurrentOrder()">💥 Excluir Pedido Completo (ADM)</button>
+            </div>
+
+            <div class="form-grid">
+              <div>
+                <label>Nome do Cliente</label>
+                <input type="text" id="editClientName" class="form-control">
+              </div>
+              <div>
+                <label>Status Geral do Pedido</label>
+                <select id="editOrderStatus" class="form-control">
+                  <option value="Em Andamento">Em Andamento</option>
+                  <option value="Concluído">Concluído 🏁</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Observação Geral do Pedido <small style="color:var(--text-faint);">(Apenas ADM)</small></label>
+              <textarea id="editOrderObs" class="form-control" rows="2" placeholder="Observação..."></textarea>
+            </div>
+
+            <div class="card-title" style="margin-top: 16px;">Tempos Particionados por Processo</div>
+            <div id="editorRowsContainer"></div>
+          </div>
+        </div>
+
+        <!-- ABA 4: CONFIGURAÇÕES -->
+        <div id="tab-admin-settings" class="tab-content">
+          <div class="settings-layout">
+            <div>
+              <!-- GERENCIADOR DE USUÁRIOS -->
+              <div class="card-pro" id="userManagementCard">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div class="card-title" style="margin-bottom:0;">👥 Gerenciador de Usuários</div>
+                </div>
+                <div id="userListContainer"></div>
+
+                <hr style="border:0; border-top:1px solid var(--border-color); margin:12px 0;">
+                
+                <div style="font-size:0.8rem; font-weight:700; margin-bottom:8px;" id="userFormTitle">➕ Cadastrar / Editar Usuário</div>
+                <input type="hidden" id="editingUserId" value="">
+                <div class="form-group"><label>Nome do Usuário</label><input type="text" id="newUserName" class="form-control" placeholder="Ex: João Silva"></div>
+                <div class="form-grid">
+                  <div>
+                    <label>Senha</label>
+                    <div class="password-input-wrapper">
+                      <input type="password" id="newUserPass" class="form-control" style="padding-right:34px;" placeholder="Senha...">
+                      <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('newUserPass', this)">👁️</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label>Perfil de Acesso</label>
+                    <select id="newUserRole" class="form-control">
+                      <option value="Usuário">Usuário</option>
+                      <option value="ADM">Administrador (ADM)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Abas Autorizadas:</label>
+                  <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 0.75rem;">
+                    <label><input type="checkbox" id="perm_andamento" checked> Em Andamento</label>
+                    <label><input type="checkbox" id="perm_concluidos" checked> Concluídos</label>
+                    <label><input type="checkbox" id="perm_atualizar" checked> Editor</label>
+                    <label><input type="checkbox" id="perm_settings"> Configurações</label>
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" id="btnSaveUser" class="btn btn-primary" onclick="saveUserFromForm()">💾 Salvar Usuário</button>
+                  <button type="button" class="btn" style="background:var(--border-subtle);" onclick="resetUserForm()">Cancelar</button>
+                </div>
+              </div>
+
+              <!-- JORNADA DE TRABALHO & ALMOÇO -->
+              <div class="card-pro" id="workScheduleCard">
+                <div class="card-title">🕒 JORNADA DE TRABALHO & INTERVALO DE ALMOÇO</div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Sincronizado diretamente na aba 'Configuracoes'.</p>
+                
+                <div style="font-size:0.78rem; font-weight:700; margin-bottom:6px; color:var(--accent);">Segunda a Quinta-feira:</div>
+                <div class="form-grid">
+                  <div><label>Entrada</label><input type="time" id="workStartWeek" class="form-control" value="07:30"></div>
+                  <div><label>Almoço (Início)</label><input type="time" id="lunchStartWeek" class="form-control" value="12:00"></div>
+                  <div><label>Almoço (Fim)</label><input type="time" id="lunchEndWeek" class="form-control" value="13:00"></div>
+                  <div><label>Saída</label><input type="time" id="workEndWeek" class="form-control" value="17:30"></div>
+                </div>
+
+                <div style="font-size:0.78rem; font-weight:700; margin-bottom:6px; margin-top:10px; color:var(--accent);">Sexta-feira:</div>
+                <div class="form-grid">
+                  <div><label>Entrada</label><input type="time" id="workStartFri" class="form-control" value="07:30"></div>
+                  <div><label>Almoço (Início)</label><input type="time" id="lunchStartFri" class="form-control" value="12:00"></div>
+                  <div><label>Almoço (Fim)</label><input type="time" id="lunchEndFri" class="form-control" value="13:00"></div>
+                  <div><label>Saída</label><input type="time" id="workEndFri" class="form-control" value="16:30"></div>
+                </div>
+
+                <button type="button" id="btnSaveWorkSchedule" class="btn btn-primary" style="margin-top:6px;" onclick="saveWorkScheduleOnly()">💾 Salvar Jornada de Trabalho</button>
+              </div>
+
+              <!-- LOGS DO SISTEMA -->
+              <div class="card-pro" id="logsCard">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <div class="card-title" style="margin-bottom:0;">📜 Logs de Atividades</div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <label style="font-size:0.72rem; font-weight:700;">Filtrar Data:</label>
+                    <input type="date" id="logDateFilter" class="form-control" style="padding:2px 6px; font-size:0.75rem; width:130px;" onchange="renderLogs()">
+                    <button type="button" class="btn" style="padding:2px 6px; font-size:0.7rem; background:var(--border-subtle);" onclick="clearLogDateFilter()">Limpar</button>
+                  </div>
+                </div>
+                <div class="logs-box" id="logsContainer"></div>
+              </div>
+            </div>
+
+            <div>
+              <!-- CALENDÁRIO VISUAL DE FERIADOS -->
+              <div class="card-pro" id="holidaysCard">
+                <div class="card-title">📅 FERIADOS E FOLGAS (MODO CALENDÁRIO)</div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Clique nos dias para marcar ou desmarcar folgas.</p>
+
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                  <select id="calMonthSelect" class="form-control" onchange="renderVisualCalendar()">
+                    <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                    <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                    <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                    <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                  </select>
+                  <select id="calYearSelect" class="form-control" style="width:100px;" onchange="renderVisualCalendar()">
+                    <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+                  </select>
+                </div>
+
+                <div class="calendar-wrapper">
+                  <div class="calendar-grid" id="visualCalendarGrid"></div>
+                </div>
+
+                <button type="button" id="btnSaveHolidays" class="btn btn-primary" style="margin-top:12px; width:100%; justify-content:center;" onclick="saveHolidaysOnly()">💾 Salvar Feriados e Folgas</button>
+              </div>
+
+              <!-- GERENCIADOR DE ETAPAS -->
+              <div class="card-pro" id="processManagerCard">
+                <div class="card-title">⚙️ GERENCIADOR DE ETAPAS / PROCESSOS</div>
+                <div id="processManagerList"></div>
+                <div style="display:flex; gap:8px; margin-top:12px; margin-bottom:10px;">
+                  <input type="text" id="newProcessLabel" class="form-control" placeholder="Nome do novo processo..." style="flex:1;">
+                  <button type="button" class="btn" style="background:var(--border-subtle);" onclick="addNewProcessStep()">➕ Incluir</button>
+                </div>
+                <button type="button" id="btnSaveSteps" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="saveStepsOnly()">💾 Salvar Etapas / Processos</button>
+              </div>
+
+              <!-- WEB APP GOOGLE SHEETS -->
+              <div class="card-pro">
+                <div class="card-title">🌐 Conexão Google Sheets</div>
+                <div class="form-group">
+                  <label>Link do Web App Script (Ativo)</label>
+                  <input type="text" id="webAppUrl" class="form-control" value="https://script.google.com/macros/s/AKfycbzdWsJ08uC2bhNIr3KM9xUZ1keuppqSNGtHGiubhVGzCN9IZJ_aPqn50fwi1o1tK_ECnw/exec">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <strong>AL Vidros - acompanhamento de produção</strong>
+        <span id="syncStatusBadge" style="color: var(--success); font-weight: 700;">🟢 Sincronizado (<span id="lastSyncTime">--:--:--</span>)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span>Atualizar a cada:</span>
+        <input type="number" id="syncValue" class="form-control" value="30" min="1" style="width: 55px; padding: 2px 6px;" onchange="resetAutoSyncTimer()">
+        <select id="syncUnit" class="form-control" style="width: 95px; padding: 2px 6px;" onchange="resetAutoSyncTimer()">
+          <option value="sec" selected>Segundos</option>
+          <option value="min">Minutos</option>
+          <option value="hour">Horas</option>
+        </select>
+        <button type="button" id="btnManualSync" class="btn" style="background: var(--border-subtle); padding: 4px 10px;" onclick="triggerManualSync()">🔄 Sincronizar Agora</button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="obs-popover-overlay" id="obsPopoverOverlay" onclick="closeObsPopover(event)">
+    <div class="obs-popover-card">
+      <div class="obs-popover-title">
+        <span id="obsPopoverHeader">Observação</span>
+        <button type="button" class="obs-popover-close" onclick="forceCloseObsPopover()">✕</button>
+      </div>
+      <div class="obs-popover-body" id="obsPopoverText"></div>
+    </div>
+  </div>
+
+  <script>
+    let activeUser = null;
+    let autoSyncIntervalTimer = null;
+    let isEditingActive = false;
+    let editingSlotsState = {};
+
+    const DEFAULT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzdWsJ08uC2bhNIr3KM9xUZ1keuppqSNGtHGiubhVGzCN9IZJ_aPqn50fwi1o1tK_ECnw/exec";
+
+    let defaultUsers = [
+      { id: 1, name: "Admin", pass: "admin", role: "ADM", perms: ["tab-andamento", "tab-concluidos", "tab-atualizar", "tab-admin-settings"] },
+      { id: 2, name: "Usuário Produção", pass: "1234", role: "Usuário", perms: ["tab-andamento", "tab-atualizar"] }
+    ];
+
+    let storedUsers = JSON.parse(localStorage.getItem('alvidros_users'));
+    let usersDb = (storedUsers && storedUsers.length > 0) ? storedUsers : defaultUsers;
+
+    let systemLogs = JSON.parse(localStorage.getItem('alvidros_logs')) || [];
+
+    let stepConfig = [
+      { key: 'inicio', label: 'Início' },
+      { key: 'medir', label: 'Medição' },
+      { key: 'produzir', label: 'Produção' },
+      { key: 'expedicao', label: 'Expedição' },
+      { key: 'instalacao', label: 'Instalação' },
+      { key: 'concluido', label: 'Conclusão' }
+    ];
+
+    let customHolidays = [];
+    let db = [];
+
+    function setBtnLoading(btnElement, isLoading, loadingText = "⏳ Processando...", originalText = "") {
+      if (!btnElement) return;
+      if (isLoading) {
+        btnElement.disabled = true;
+        if (originalText) btnElement.setAttribute('data-orig-text', originalText);
+        btnElement.innerHTML = loadingText;
+      } else {
+        btnElement.disabled = false;
+        let orig = btnElement.getAttribute('data-orig-text');
+        if (orig) btnElement.innerHTML = orig;
+      }
+    }
+
+    function renderProcessManager() {
+      const container = document.getElementById('processManagerList');
+      if (!container) return;
+      container.innerHTML = "";
+
+      stepConfig.forEach((st, idx) => {
+        let row = document.createElement('div');
+        row.className = 'process-item-row';
+        row.innerHTML = `
+          <span>${idx + 1}. <strong>${st.label}</strong> <small style="color:var(--text-faint);">${st.key}</small></span>
+          <div class="process-actions">
+            <button type="button" class="btn" style="padding:2px 6px;" onclick="moveProcessStep(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>⬆️</button>
+            <button type="button" class="btn" style="padding:2px 6px;" onclick="moveProcessStep(${idx}, 1)" ${idx === stepConfig.length - 1 ? 'disabled' : ''}>⬇️</button>
+            <button type="button" class="btn btn-danger" style="padding:2px 6px;" onclick="removeProcessStep(${idx})" ${stepConfig.length <= 2 ? 'disabled' : ''}>🗑️</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function addNewProcessStep() {
+      const labelInput = document.getElementById('newProcessLabel');
+      const labelVal = labelInput.value.trim();
+      if (!labelVal) return;
+
+      const keyVal = 'custom_' + Date.now();
+      stepConfig.push({ key: keyVal, label: labelVal });
+      labelInput.value = "";
+      renderProcessManager();
+      renderDashboard();
+    }
+
+    function moveProcessStep(index, direction) {
+      let target = index + direction;
+      if (target < 0 || target >= stepConfig.length) return;
+      let temp = stepConfig[index];
+      stepConfig[index] = stepConfig[target];
+      stepConfig[target] = temp;
+      renderProcessManager();
+      renderDashboard();
+    }
+
+    function removeProcessStep(index) {
+      if (confirm(`Remover o processo '${stepConfig[index].label}'?`)) {
+        stepConfig.splice(index, 1);
+        renderProcessManager();
+        renderDashboard();
+      }
+    }
+
+    function renderVisualCalendar() {
+      const grid = document.getElementById('visualCalendarGrid');
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      let month = parseInt(document.getElementById('calMonthSelect').value);
+      let year = parseInt(document.getElementById('calYearSelect').value);
+
+      let daysInWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      daysInWeek.forEach(d => {
+        grid.innerHTML += `<div class="calendar-header-day">${d}</div>`;
+      });
+
+      let firstDayIndex = new Date(year, month, 1).getDay();
+      let totalDays = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += `<div class="calendar-day-cell empty"></div>`;
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        let currentDt = new Date(year, month, day);
+        let dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        let isWeekend = currentDt.getDay() === 0 || currentDt.getDay() === 6;
+        let isCustHol = customHolidays.includes(dateStr);
+
+        let cellClass = "calendar-day-cell";
+        if (isWeekend) cellClass += " weekend";
+        else if (isCustHol) cellClass += " holiday";
+
+        let clickAttr = !isWeekend ? `onclick="toggleCustomHoliday('${dateStr}')"` : "";
+
+        grid.innerHTML += `
+          <div class="${cellClass}" ${clickAttr} title="${isCustHol ? 'Folga Personalizada' : ''}">
+            <strong>${day}</strong>
+            <span style="font-size:0.6rem;">${isCustHol ? 'Folga' : ''}</span>
+          </div>
+        `;
+      }
+    }
+
+    function toggleCustomHoliday(dateStr) {
+      if (customHolidays.includes(dateStr)) {
+        customHolidays = customHolidays.filter(d => d !== dateStr);
+      } else {
+        customHolidays.push(dateStr);
+      }
+      renderVisualCalendar();
+    }
+
+    function initLoginSelect() {
+      const sel = document.getElementById('loginUserSelect');
+      if (!sel) return;
+      sel.innerHTML = "";
+      usersDb.forEach(u => {
+        sel.innerHTML += `<option value="${u.id}">${u.name} (${u.role})</option>`;
+      });
+    }
+
+    function initCurrentDateCalendar() {
+      let today = new Date();
+      let currentMonth = today.getMonth();
+      let currentYear = today.getFullYear();
+
+      const monthSelect = document.getElementById('calMonthSelect');
+      const yearSelect = document.getElementById('calYearSelect');
+
+      if (monthSelect) monthSelect.value = currentMonth;
+      if (yearSelect) {
+        let exists = Array.from(yearSelect.options).some(opt => parseInt(opt.value) === currentYear);
+        if (!exists) {
+          let opt = document.createElement('option');
+          opt.value = currentYear;
+          opt.innerText = currentYear;
+          yearSelect.appendChild(opt);
+        }
+        yearSelect.value = currentYear;
+      }
+      renderVisualCalendar();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initLoginSelect();
+      initCurrentDateCalendar();
+      syncFromGoogleSheets();
+    });
+
+    function getScriptUrl() {
+      const input = document.getElementById('webAppUrl');
+      return (input && input.value.trim()) ? input.value.trim() : DEFAULT_WEB_APP_URL;
+    }
+
+    function sanitizeDateStr(val) {
+      if (!val) return "";
+      let str = String(val).trim();
+      if (str.includes("GMT") || str.includes("Horário")) {
+        let d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          let yyyy = d.getFullYear();
+          let mm = String(d.getMonth() + 1).padStart(2, '0');
+          let dd = String(d.getDate()).padStart(2, '0');
+          return `${yyyy}-${mm}-${dd}`;
+        }
+      }
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes('/')) {
+        let parts = str.split('/');
+        if (parts.length === 3) return `${parts[2]}-${String(parts[1]).padStart(2, '0')}-${String(parts[0]).padStart(2, '0')}`;
+      }
+      return str;
+    }
+
+    function sanitizeTimeStr(val) {
+      if (!val) return "";
+      let str = String(val).trim();
+      if (str.includes("GMT") || str.includes("Horário")) {
+        let d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          let hh = String(d.getHours()).padStart(2, '0');
+          let mm = String(d.getMinutes()).padStart(2, '0');
+          return `${hh}:${mm}`;
+        }
+      }
+      if (str.includes('T')) str = str.split('T')[1];
+      let parts = str.split(':');
+      if (parts.length >= 2) return `${String(parts[0]).padStart(2, '0')}:${String(parts[1]).padStart(2, '0')}`;
+      return str;
+    }
+
+    function displayDateSimple(isoDateStr) {
+      if (!isoDateStr) return "";
+      let parts = isoDateStr.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return isoDateStr;
+    }
+
+    function renderSimpleDateTimeStr(startIsoStr, endIsoStr) {
+      let startPart = "";
+      let endPart = "";
+
+      if (startIsoStr) {
+        let p = startIsoStr.split('T');
+        let dateSimple = displayDateSimple(p[0]);
+        let timeSimple = p[1] || "";
+        startPart = `📅 ${dateSimple} ${timeSimple}`.trim();
+      }
+
+      if (endIsoStr) {
+        let p = endIsoStr.split('T');
+        let dateSimple = displayDateSimple(p[0]);
+        let timeSimple = p[1] || "";
+        endPart = `🏁 ${dateSimple} ${timeSimple}`.trim();
+      }
+
+      if (startPart && endPart) return `${startPart} ➔ ${endPart}`;
+      if (startPart) return `${startPart} ➔ 🏁 Pendente`;
+      if (endPart) return `📅 Pendente ➔ ${endPart}`;
+      return `📅 Pendente ➔ 🏁 Pendente`;
+    }
+
+    function getWorkConfigForDate(dateObj) {
+      let dayOfWeek = dateObj.getDay(); 
+      if (dayOfWeek === 0 || dayOfWeek === 6) return null; 
+
+      let dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+      if (customHolidays.includes(dateStr)) return null; 
+
+      let isFri = (dayOfWeek === 5);
+      let workStart = document.getElementById(isFri ? 'workStartFri' : 'workStartWeek')?.value || "07:30";
+      let lunchStart = document.getElementById(isFri ? 'lunchStartFri' : 'lunchStartWeek')?.value || "12:00";
+      let lunchEnd = document.getElementById(isFri ? 'lunchEndFri' : 'lunchEndWeek')?.value || "13:00";
+      let workEnd = document.getElementById(isFri ? 'workEndFri' : 'workEndWeek')?.value || "17:30";
+
+      return { workStart, lunchStart, lunchEnd, workEnd };
+    }
+
+    function validateSlotSchedule(isoDateTimeStr) {
+      if (!isoDateTimeStr) return { valid: true };
+      let parts = isoDateTimeStr.split('T');
+      if (parts.length < 2 || !parts[0] || !parts[1]) return { valid: true };
+
+      let dParts = parts[0].split('-');
+      let year = parseInt(dParts[0]);
+      let month = parseInt(dParts[1]) - 1;
+      let day = parseInt(dParts[2]);
+      let dt = new Date(year, month, day);
+
+      let dayOfWeek = dt.getDay();
+      let dateFormatted = `${String(day).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${year}`;
+
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return { valid: false, reason: `Data ${dateFormatted} é um fim de semana.` };
+      }
+
+      let dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      if (customHolidays.includes(dateStr)) {
+        return { valid: false, reason: `Data ${dateFormatted} está cadastrada como Feriado/Folga.` };
+      }
+
+      let cfg = getWorkConfigForDate(dt);
+      if (cfg) {
+        let tVal = parts[1];
+        if (tVal < cfg.workStart || tVal > cfg.workEnd) {
+          return { valid: false, reason: `Horário ${tVal} está fora da jornada (${cfg.workStart} às ${cfg.workEnd}).` };
+        }
+        if (tVal > cfg.lunchStart && tVal < cfg.lunchEnd) {
+          return { valid: false, reason: `Horário ${tVal} está dentro do intervalo de almoço (${cfg.lunchStart} às ${cfg.lunchEnd}).` };
+        }
+      }
+
+      return { valid: true };
+    }
+
+    // CÁLCULO DE TEMPO ÚTIL, HORA EXTRA E FORA DO EXPEDIENTE
+    function calculateSlotDurationBreakdown(startIso, endIso) {
+      if (!startIso || !endIso) return { usefulMs: 0, extraMs: 0, offShiftMs: 0 };
+      let d1 = new Date(startIso);
+      let d2 = new Date(endIso);
+      if (isNaN(d1.getTime()) || isNaN(d2.getTime()) || d2 <= d1) return { usefulMs: 0, extraMs: 0, offShiftMs: 0 };
+
+      let usefulMs = 0;
+      let extraMs = 0;
+      let offShiftMs = 0;
+      let current = new Date(d1.getTime());
+
+      while (current < d2) {
+        let dayCfg = getWorkConfigForDate(current);
+        if (dayCfg) {
+          let currTimeStr = `${String(current.getHours()).padStart(2,'0')}:${String(current.getMinutes()).padStart(2,'0')}`;
+          
+          let isWorkingHour = (currTimeStr >= dayCfg.workStart && currTimeStr < dayCfg.workEnd) &&
+                              !(currTimeStr >= dayCfg.lunchStart && currTimeStr < dayCfg.lunchEnd);
+
+          if (isWorkingHour) {
+            usefulMs += 60000;
+          } else {
+            let startParts = startIso.split('T');
+            let startTimeVal = startParts[1] || "";
+            if (startTimeVal < dayCfg.workStart || currTimeStr >= dayCfg.workEnd) {
+              extraMs += 60000;
+            } else {
+              offShiftMs += 60000;
+            }
+          }
+        } else {
+          offShiftMs += 60000;
+        }
+        current.setMinutes(current.getMinutes() + 1);
+      }
+
+      return { usefulMs, extraMs, offShiftMs };
+    }
+
+    async function sendToAppsScript(payloadObj) {
+      const url = getScriptUrl();
+      if (!url) return false;
+
+      try {
+        let response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payloadObj)
+        });
+        
+        let result = await response.json();
+        return result.status === "success";
+      } catch (err) {
+        console.error("Erro no envio ao Apps Script:", err);
+        return false;
+      }
+    }
+
+    async function syncFromGoogleSheets(isManual = false) {
+      if (isEditingActive && !isManual) return;
+
+      const url = getScriptUrl();
+      const statusSpan = document.getElementById('syncStatusBadge');
+      const syncBtn = document.getElementById('btnManualSync');
+      if (!url) return;
+      
+      if (statusSpan) {
+        statusSpan.innerHTML = '🟡 Sincronizando...';
+        statusSpan.style.color = 'var(--warning)';
+      }
+
+      if (isManual && syncBtn) {
+        setBtnLoading(syncBtn, true, "⏳ Sincronizando...", "🔄 Sincronizar Agora");
+      }
+
+      try {
+        let res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP Status " + res.status);
+        let data = await res.json();
+        
+        let currentEditingPed = document.getElementById('selectOrderToEdit') ? document.getElementById('selectOrderToEdit').value : "";
+
+        if (data && (data.dados || data.orders)) {
+          parseSheetsDataToDb(data.dados || data.orders);
+          renderDashboard();
+          populateOrderSelect();
+          if (currentEditingPed) {
+            document.getElementById('selectOrderToEdit').value = currentEditingPed;
+          }
+        }
+
+        if (data && data.config) {
+          if (data.config.etapas && data.config.etapas.length > 0) {
+            let remoteSteps = data.config.etapas;
+            let merged = [];
+            let seenKeys = new Set();
+
+            remoteSteps.forEach(st => {
+              if (st && st.key && !seenKeys.has(st.key)) {
+                seenKeys.add(st.key);
+                merged.push(st);
+              }
+            });
+
+            if (merged.length > 0) {
+              stepConfig = merged;
+            }
+            renderProcessManager();
+          }
+
+          if (data.config.feriados) {
+            customHolidays = data.config.feriados;
+            renderVisualCalendar();
+          }
+
+          if (data.config.jornada) {
+            let j = data.config.jornada;
+            if (j.workStartWeek) document.getElementById('workStartWeek').value = j.workStartWeek;
+            if (j.lunchStartWeek) document.getElementById('lunchStartWeek').value = j.lunchStartWeek;
+            if (j.lunchEndWeek) document.getElementById('lunchEndWeek').value = j.lunchEndWeek;
+            if (j.workEndWeek) document.getElementById('workEndWeek').value = j.workEndWeek;
+            if (j.workStartFri) document.getElementById('workStartFri').value = j.workStartFri;
+            if (j.lunchStartFri) document.getElementById('lunchStartFri').value = j.lunchStartFri;
+            if (j.lunchEndFri) document.getElementById('lunchEndFri').value = j.lunchEndFri;
+            if (j.workEndFri) document.getElementById('workEndFri').value = j.workEndFri;
+          }
+        }
+
+        if (data && (data.usuarios || data.users) && (data.usuarios || data.users).length > 0) {
+          let rawU = data.usuarios || data.users;
+          usersDb = rawU.map(u => ({
+            id: parseInt(u.ID || u.id),
+            name: u.Nome || u.nome,
+            pass: String(u.Senha || u.senha || ''),
+            role: u.Perfil || u.perfil || 'Usuário',
+            perms: Array.isArray(u.permissoes || u.Permissoes) 
+                   ? (u.permissoes || u.Permissoes) 
+                   : String(u.Permissoes || u.permissoes || '').split(',')
+          }));
+          localStorage.setItem('alvidros_users', JSON.stringify(usersDb));
+          initLoginSelect();
+          renderUsersList();
+        }
+
+        if (data && data.logs) {
+          systemLogs = data.logs.map(l => ({ 
+            dt: l.Data_Hora || l.dataHora || l.data_hora || '', 
+            user: l.Usuario || l.usuario || 'Sistema', 
+            action: l.Acao || l.action || '-' 
+          }));
+          renderLogs();
+        }
+
+        if (statusSpan) {
+          statusSpan.innerHTML = '🟢 Sincronizado (<span id="lastSyncTime">' + new Date().toLocaleTimeString('pt-BR') + '</span>)';
+          statusSpan.style.color = 'var(--success)';
+        }
+        if (isManual) alert("Sincronização realizada com sucesso!");
+
+      } catch (err) {
+        console.error("Erro na sincronização:", err);
+        if (statusSpan) {
+          statusSpan.innerHTML = '🔴 Erro na Conexão (' + new Date().toLocaleTimeString('pt-BR') + ')';
+          statusSpan.style.color = 'var(--danger)';
+        }
+      } finally {
+        if (isManual && syncBtn) {
+          setBtnLoading(syncBtn, false);
+        }
+      }
+    }
+
+    function parseSheetsDataToDb(rows) {
+      if (!Array.isArray(rows)) return;
+      let ordersMap = {};
+      
+      rows.forEach(r => {
+        let ped = String(r.Pedido || r.pedido || '').trim();
+        if (!ped) return;
+
+        if (!ordersMap[ped]) {
+          ordersMap[ped] = {
+            pedido: ped,
+            cliente: r.Cliente || r.cliente || '',
+            status: r.Status || r.status || 'Em Andamento',
+            obs: r.Observacao_Geral || r.observacaoGeral || r.obs || '',
+            etapas: {}
+          };
+        }
+
+        let k = r.Etapa || r.etapa;
+        if (k) {
+          if (!ordersMap[ped].etapas[k]) ordersMap[ped].etapas[k] = { slots: [] };
+          
+          let dIni = sanitizeDateStr(r.Data_Inicio || r.dataInicio || '');
+          let hIni = sanitizeTimeStr(r.Hora_Inicio || r.horaInicio || '');
+          let dFim = sanitizeDateStr(r.Data_Fim || r.dataFim || '');
+          let hFim = sanitizeTimeStr(r.Hora_Fim || r.horaFim || '');
+
+          let sStart = (dIni && hIni) ? `${dIni}T${hIni}` : (dIni ? `${dIni}T00:00` : '');
+          let sEnd = (dFim && hFim) ? `${dFim}T${hFim}` : (dFim ? `${dFim}T00:00` : '');
+          
+          if (sStart || sEnd || (r.Observacao_Part || r.obs)) {
+            ordersMap[ped].etapas[k].slots.push({
+              start: sStart,
+              end: sEnd,
+              obs: r.Observacao_Part || r.obs || ''
+            });
+          }
+        }
+      });
+
+      // Checagem para mover pedidos com conclusão preenchida
+      Object.values(ordersMap).forEach(p => {
+        let concData = p.etapas['concluido'];
+        if (concData && concData.slots && concData.slots.length > 0) {
+          let hasEnd = concData.slots.some(s => s.end && s.end !== "");
+          if (hasEnd) p.status = "Concluído";
+        }
+      });
+
+      db = Object.values(ordersMap);
+    }
+
+    async function handleSelectOrderToEdit() {
+      const ped = document.getElementById('selectOrderToEdit').value;
+      if (!ped) {
+        isEditingActive = false;
+        document.getElementById('editorPanel').style.display = "none";
+        return;
+      }
+      isEditingActive = true;
+      editingSlotsState = {};
+      await syncFromGoogleSheets();
+      document.getElementById('selectOrderToEdit').value = ped;
+      loadOrderIntoEditor();
+    }
+
+    function loadOrderIntoEditor() {
+      const ped = document.getElementById('selectOrderToEdit').value;
+      const panel = document.getElementById('editorPanel');
+      const container = document.getElementById('editorRowsContainer');
+      if (!container || !panel) return;
+
+      if (!ped) { panel.style.display = "none"; container.innerHTML = ""; return; }
+
+      let proj = db.find(x => x.pedido === ped);
+      if (!proj) return;
+
+      document.getElementById('editingOrderTitle').innerText = `Editando Pedido #${proj.pedido}`;
+      document.getElementById('editClientName').value = proj.cliente;
+      document.getElementById('editOrderStatus').value = proj.status || "Em Andamento";
+      document.getElementById('editOrderObs').value = proj.obs || "";
+
+      panel.style.display = "block";
+      container.innerHTML = "";
+
+      stepConfig.forEach(stepObj => {
+        let k = stepObj.key;
+        let sData = proj.etapas[k] || { slots: [] };
+
+        let box = document.createElement('div');
+        box.className = 'editor-step-box';
+        
+        let slotsHtml = '';
+        sData.slots.forEach((slot, sIdx) => {
+          let startDate = slot.start ? slot.start.split('T')[0] : '';
+          let startTime = slot.start ? slot.start.split('T')[1] : '';
+          let endDate = slot.end ? slot.end.split('T')[0] : '';
+          let endTime = slot.end ? slot.end.split('T')[1] : '';
+          let slotObs = slot.obs || '';
+
+          let stateKey = `${k}_${sIdx}`;
+          let isEditingMode = editingSlotsState[stateKey] || false;
+          let isNewSlot = (!slot.start && !slot.end && !slot.obs);
+
+          let displaySimpleStr = renderSimpleDateTimeStr(slot.start, slot.end);
+          let breakdown = calculateSlotDurationBreakdown(slot.start, slot.end);
+          
+          let durationLabel = breakdown.usefulMs > 0 ? ` (${formatDuration(breakdown.usefulMs)})` : '';
+          let extraTag = breakdown.extraMs > 0 ? `<span class="tag-extra">Extra: ${formatDuration(breakdown.extraMs)}</span>` : '';
+          let offShiftTag = breakdown.offShiftMs > 0 ? `<span class="tag-fora-expediente">Fora do Expediente</span>` : '';
+
+          if (!isEditingMode && !isNewSlot) {
+            slotsHtml += `
+              <div class="slot-fixed-view" id="slot_row_${k}_${sIdx}">
+                <div class="slot-fixed-header">
+                  <span><strong>Part ${sIdx + 1}:</strong> ${displaySimpleStr}<strong style="color:var(--accent);"> ${durationLabel}</strong> ${extraTag} ${offShiftTag}</span>
+                  <div style="display:flex; gap:6px;">
+                    <button type="button" class="btn-edit-slot" onclick="enableSlotEdit('${k}', ${sIdx})">✏️ Editar</button>
+                    <button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:0.7rem;" onclick="removeSlotFromStep('${proj.pedido}', '${k}', ${sIdx})">🗑️</button>
+                  </div>
+                </div>
+                ${slotObs ? `<div style="font-size:0.78rem; color:var(--text-muted); background:#ffffff; padding:6px 10px; border-radius:6px; border:1px solid #bae6fd;"><strong>Obs:</strong> ${escapeJsString(slotObs)}</div>` : ''}
+              </div>
+            `;
+          } else {
+            slotsHtml += `
+              <div class="slot-row" id="slot_row_${k}_${sIdx}">
+                <div class="slot-row-inputs">
+                  <span class="slot-label">Part ${sIdx + 1}</span>
+                  📅 <input type="date" id="start_d_${k}_${sIdx}" class="editor-input-date" value="${startDate}">
+                  <input type="time" id="start_t_${k}_${sIdx}" class="editor-input-time" value="${startTime}">
+                  ➔
+                  🏁 <input type="date" id="end_d_${k}_${sIdx}" class="editor-input-date" value="${endDate}">
+                  <input type="time" id="end_t_${k}_${sIdx}" class="editor-input-time" value="${endTime}">
+                  <button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:0.7rem;" onclick="removeSlotFromStep('${proj.pedido}', '${k}', ${sIdx})">🗑️</button>
+                </div>
+                <div>
+                  <textarea id="obs_${k}_${sIdx}" class="editor-input-obs" rows="2" placeholder="Observação desta part (opcional)...">${escapeJsString(slotObs)}</textarea>
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        box.innerHTML = `
+          <div class="editor-step-header">
+            <span class="editor-step-title">${stepObj.label}</span>
+            <button type="button" class="btn-add-slot" onclick="addSlotToStep('${proj.pedido}', '${k}')">➕ Adicionar Horário</button>
+          </div>
+          <div>${slotsHtml || '<small style="color:var(--text-faint);">Nenhum horário registrado.</small>'}</div>
+          <div class="editor-actions">
+            <button type="button" class="btn-save-step" id="btn_save_step_${k}" onclick="saveSingleStep('${proj.pedido}', '${k}')">
+              💾 Salvar Processo (${stepObj.label})
+            </button>
+          </div>
+        `;
+        container.appendChild(box);
+      });
+    }
+
+    function enableSlotEdit(stepKey, slotIndex) {
+      editingSlotsState[`${stepKey}_${slotIndex}`] = true;
+      loadOrderIntoEditor();
+    }
+
+    function addSlotToStep(ped, stepKey) {
+      let proj = db.find(x => x.pedido === ped);
+      if (!proj) return;
+      if (!proj.etapas[stepKey]) proj.etapas[stepKey] = { slots: [] };
+
+      collectStepInputs(proj, stepKey);
+      let newIdx = proj.etapas[stepKey].slots.length;
+      proj.etapas[stepKey].slots.push({ start: "", end: "", obs: "" });
+      editingSlotsState[`${stepKey}_${newIdx}`] = true;
+      loadOrderIntoEditor();
+    }
+
+    function removeSlotFromStep(ped, stepKey, slotIndex) {
+      let proj = db.find(x => x.pedido === ped);
+      if (proj && proj.etapas[stepKey] && proj.etapas[stepKey].slots) {
+        collectStepInputs(proj, stepKey);
+        proj.etapas[stepKey].slots.splice(slotIndex, 1);
+        editingSlotsState[`${stepKey}_${slotIndex}`] = false;
+        loadOrderIntoEditor();
+      }
+    }
+
+    function collectStepInputs(proj, stepKey) {
+      if (!proj || !proj.etapas[stepKey]) return;
+      proj.cliente = document.getElementById('editClientName').value.trim();
+      proj.status = document.getElementById('editOrderStatus').value;
+      proj.obs = document.getElementById('editOrderObs').value.trim();
+
+      proj.etapas[stepKey].slots.forEach((_, sIdx) => {
+        let sdEl = document.getElementById(`start_d_${stepKey}_${sIdx}`);
+        let stEl = document.getElementById(`start_t_${stepKey}_${sIdx}`);
+        let edEl = document.getElementById(`end_d_${stepKey}_${sIdx}`);
+        let etEl = document.getElementById(`end_t_${stepKey}_${sIdx}`);
+        let obEl = document.getElementById(`obs_${stepKey}_${sIdx}`);
+
+        if (sdEl || stEl || edEl || etEl || obEl) {
+          let sd = sdEl ? sdEl.value : '';
+          let st = stEl ? stEl.value : '';
+          let ed = edEl ? edEl.value : '';
+          let et = etEl ? etEl.value : '';
+          let ob = obEl ? obEl.value : '';
+
+          proj.etapas[stepKey].slots[sIdx].start = (sd && st) ? `${sd}T${st}` : (sd ? `${sd}T00:00` : '');
+          proj.etapas[stepKey].slots[sIdx].end = (ed && et) ? `${ed}T${et}` : (ed ? `${ed}T00:00` : '');
+          proj.etapas[stepKey].slots[sIdx].obs = ob.trim();
+        }
+      });
+    }
+
+    async function saveSingleStep(ped, stepKey) {
+      const btn = document.getElementById(`btn_save_step_${stepKey}`);
+      let origLabel = stepConfig.find(s => s.key === stepKey)?.label || '';
+      
+      let proj = db.find(x => x.pedido === ped);
+      if (!proj) return;
+
+      collectStepInputs(proj, stepKey);
+
+      let validSlots = proj.etapas[stepKey] ? proj.etapas[stepKey].slots.filter(s => s.start || s.end || s.obs) : [];
+      
+      if (proj.etapas[stepKey] && proj.etapas[stepKey].slots.length > 0 && validSlots.length === 0) {
+        alert("Preencha ao menos a Data de Início ou Fim da Part antes de salvar.");
+        return;
+      }
+
+      // Se salvou na Conclusão com data/hora de fim preenchida, altera o status para Concluído automaticamente
+      if (stepKey === 'concluido' && validSlots.some(s => s.end && s.end !== "")) {
+        proj.status = "Concluído";
+      }
+
+      let warnings = [];
+      validSlots.forEach((slot, idx) => {
+        if (slot.start) {
+          let checkStart = validateSlotSchedule(slot.start);
+          if (!checkStart.valid) warnings.push(`• Part ${idx + 1} (Início): ${checkStart.reason}`);
+        }
+        if (slot.end) {
+          let checkEnd = validateSlotSchedule(slot.end);
+          if (!checkEnd.valid) warnings.push(`• Part ${idx + 1} (Fim): ${checkEnd.reason}`);
+        }
+      });
+
+      if (warnings.length > 0) {
+        let confirmMsg = `⚠️ ATENÇÃO: Foram identificados os seguintes alertas nos horários:\n\n` + 
+                         warnings.join("\n") + 
+                         `\n\n(Obs: O tempo fora do expediente/jornada não somará no Lead Time Útil)\n\nDeseja salvar mesmo assim?`;
+        if (!confirm(confirmMsg)) {
+          return;
+        }
+      }
+
+      setBtnLoading(btn, true, `⏳ Salvando...`, `💾 Salvar Processo (${origLabel})`);
+
+      try {
+        let payload = {
+          action: 'saveStepOnly',
+          pedido: ped,
+          cliente: proj.cliente,
+          status: proj.status,
+          obsGeral: proj.obs,
+          stepKey: stepKey,
+          slots: validSlots,
+          usuario: activeUser ? activeUser.name : 'Usuário'
+        };
+
+        let ok = await sendToAppsScript(payload);
+        if (ok) {
+          addLog(`Atualizou etapa '${stepKey}' (Status: ${proj.status}) do Pedido #${ped}`);
+          
+          if (proj.etapas[stepKey]) {
+            proj.etapas[stepKey].slots.forEach((_, idx) => {
+              editingSlotsState[`${stepKey}_${idx}`] = false;
+            });
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          isEditingActive = false;
+          await syncFromGoogleSheets(true);
+          
+          if (proj.status === "Concluído") {
+            document.getElementById('editorPanel').style.display = "none";
+            populateOrderSelect();
+            alert(`Pedido #${ped} CONCLUÍDO com sucesso! Ele foi movido para a aba Concluídos e não pode mais ser editado.`);
+          } else {
+            isEditingActive = true;
+            alert(`Processo (${origLabel}) salvo com sucesso na planilha!`);
+          }
+        } else {
+          alert("Aviso: Houve uma falha ao enviar os dados para a planilha.");
+        }
+      } catch (e) {
+        console.error("Erro ao salvar etapa:", e);
+        alert("Erro ao conectar com o Google Sheets.");
+      } finally {
+        setBtnLoading(btn, false);
+        if (proj.status !== "Concluído") {
+          loadOrderIntoEditor();
+        }
+        renderDashboard();
+      }
+    }
+
+    function formatDuration(ms) {
+      if (!ms || ms <= 0) return "0h 0m";
+      let totalMinutes = Math.floor(ms / (1000 * 60));
+      let hours = Math.floor(totalMinutes / 60);
+      let minutes = totalMinutes % 60;
+      let days = Math.floor(hours / 24);
+      hours = hours % 24;
+
+      if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`;
+    }
+
+    function renderDashboard() {
+      const container = document.getElementById('activeOrdersList');
+      if (!container) return;
+      container.innerHTML = "";
+      const filterVal = document.getElementById('searchActiveInput') ? document.getElementById('searchActiveInput').value.toLowerCase() : "";
+
+      let active = db.filter(p => p.status === "Em Andamento" && (p.pedido.toLowerCase().includes(filterVal) || p.cliente.toLowerCase().includes(filterVal)));
+
+      active.forEach(p => {
+        let card = document.createElement('div');
+        card.className = 'card-pro';
+        let pedObsIcon = p.obs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Observação do Pedido #${p.pedido}', '${escapeJsString(p.obs)}')">?</button>` : '';
+
+        let totalUsefulMs = 0;
+        let totalExtraMs = 0;
+        let totalOffShiftMs = 0;
+
+        let html = `
+          <div class="order-card-header">
+            <div>
+              <span class="order-num">#${p.pedido} ${pedObsIcon}</span>
+              <span class="order-client">${p.cliente}</span>
+            </div>
+            <div class="total-badges-container">
+              <span class="badge-status">Em Andamento</span>
+              <span class="total-time-badge" id="total_time_ped_${p.pedido}">⏱️ Útil: 0h 0m</span>
+              <span class="total-extra-badge" id="total_extra_ped_${p.pedido}">🔥 Extra: 0h 0m</span>
+              <span class="total-off-badge" id="total_off_ped_${p.pedido}">⛔ Fora Exp.: 0h 0m</span>
+            </div>
+          </div>
+          <div class="flow-strip">
+        `;
+
+        stepConfig.forEach((stepObj) => {
+          let k = stepObj.key;
+          let sData = p.etapas[k];
+          if (sData && sData.slots && sData.slots.length > 0) {
+            let slotDatesHtml = '';
+            let stepUseful = 0;
+            let stepExtra = 0;
+            let stepOff = 0;
+
+            sData.slots.forEach((s, idx) => {
+              let breakdown = calculateSlotDurationBreakdown(s.start, s.end);
+              stepUseful += breakdown.usefulMs;
+              stepExtra += breakdown.extraMs;
+              stepOff += breakdown.offShiftMs;
+
+              let extraTag = breakdown.extraMs > 0 ? `<span class="tag-extra">Extra: ${formatDuration(breakdown.extraMs)}</span>` : '';
+              let offShiftTag = breakdown.offShiftMs > 0 ? `<span class="tag-fora-expediente">Fora do Expediente</span>` : '';
+
+              slotDatesHtml += `<div class="flow-time-item"><strong>P${idx+1}:</strong> ${renderSimpleDateTimeStr(s.start, s.end)} ${extraTag} ${offShiftTag}</div>`;
+            });
+
+            totalUsefulMs += stepUseful;
+            totalExtraMs += stepExtra;
+            totalOffShiftMs += stepOff;
+
+            let compiledObs = compileStepObsText(sData.slots, stepObj.label);
+            let stepObsIcon = compiledObs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Obs. ${stepObj.label} - Pedido #${p.pedido}', '${escapeJsString(compiledObs)}')">?</button>` : '';
+
+            html += `
+              <div class="flow-node">
+                <div class="flow-header">
+                  <span class="flow-label">${stepObj.label}</span>
+                  ${stepObsIcon}
+                </div>
+                ${slotDatesHtml}
+                <div class="sector-breakdown-box">
+                  <span class="step-duration-tag">⏱️ Útil: ${formatDuration(stepUseful)}</span>
+                  ${stepExtra > 0 ? `<span class="step-extra-tag">🔥 Extra: ${formatDuration(stepExtra)}</span>` : ''}
+                  ${stepOff > 0 ? `<span class="step-off-tag">⛔ Fora Exp.: ${formatDuration(stepOff)}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        html += `</div>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+
+        document.getElementById(`total_time_ped_${p.pedido}`).innerText = `⏱️ Útil: ${formatDuration(totalUsefulMs)}`;
+        document.getElementById(`total_extra_ped_${p.pedido}`).innerText = `🔥 Extra: ${formatDuration(totalExtraMs)}`;
+        document.getElementById(`total_off_ped_${p.pedido}`).innerText = `⛔ Fora Exp.: ${formatDuration(totalOffShiftMs)}`;
+      });
+
+      renderCompletedCards();
+    }
+
+    function renderCompletedCards() {
+      const container = document.getElementById('completedOrdersList');
+      if (!container) return;
+      container.innerHTML = "";
+
+      const pedF = document.getElementById('filterPedDone') ? document.getElementById('filterPedDone').value.toLowerCase() : "";
+      const cliF = document.getElementById('filterCliDone') ? document.getElementById('filterCliDone').value.toLowerCase() : "";
+
+      let completed = db.filter(p => p.status === "Concluído" && p.pedido.toLowerCase().includes(pedF) && p.cliente.toLowerCase().includes(cliF));
+
+      completed.forEach(p => {
+        let card = document.createElement('div');
+        card.className = 'card-pro';
+        let pedObsIcon = p.obs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Observação do Pedido #${p.pedido}', '${escapeJsString(p.obs)}')">?</button>` : '';
+
+        let totalUsefulMs = 0;
+        let totalExtraMs = 0;
+        let totalOffShiftMs = 0;
+
+        let html = `
+          <div class="order-card-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="order-num">#${p.pedido} ${pedObsIcon}</span>
+              <span class="order-client">${p.cliente}</span>
+            </div>
+            <div class="total-badges-container">
+              <span class="badge-status success">Concluído</span>
+              <span class="total-time-badge" id="total_time_done_${p.pedido}">⏱️ Útil: 0h 0m</span>
+              <span class="total-extra-badge" id="total_extra_done_${p.pedido}">🔥 Extra: 0h 0m</span>
+              <span class="total-off-badge" id="total_off_done_${p.pedido}">⛔ Fora Exp.: 0h 0m</span>
+            </div>
+          </div>
+          <div class="flow-strip">
+        `;
+
+        stepConfig.forEach((stepObj) => {
+          let k = stepObj.key;
+          let sData = p.etapas[k];
+          if (sData && sData.slots && sData.slots.length > 0) {
+            let slotDatesHtml = '';
+            let stepUseful = 0;
+            let stepExtra = 0;
+            let stepOff = 0;
+
+            sData.slots.forEach((s, idx) => {
+              let breakdown = calculateSlotDurationBreakdown(s.start, s.end);
+              stepUseful += breakdown.usefulMs;
+              stepExtra += breakdown.extraMs;
+              stepOff += breakdown.offShiftMs;
+
+              let extraTag = breakdown.extraMs > 0 ? `<span class="tag-extra">Extra: ${formatDuration(breakdown.extraMs)}</span>` : '';
+              let offShiftTag = breakdown.offShiftMs > 0 ? `<span class="tag-fora-expediente">Fora do Expediente</span>` : '';
+
+              slotDatesHtml += `<div class="flow-time-item"><strong>P${idx+1}:</strong> ${renderSimpleDateTimeStr(s.start, s.end)} ${extraTag} ${offShiftTag}</div>`;
+            });
+
+            totalUsefulMs += stepUseful;
+            totalExtraMs += stepExtra;
+            totalOffShiftMs += stepOff;
+
+            let compiledObs = compileStepObsText(sData.slots, stepObj.label);
+            let stepObsIcon = compiledObs ? `<button type="button" class="note-icon-btn" onclick="openObsPopover('Obs. ${stepObj.label} - Pedido #${p.pedido}', '${escapeJsString(compiledObs)}')">?</button>` : '';
+
+            html += `
+              <div class="flow-node">
+                <div class="flow-header">
+                  <span class="flow-label">${stepObj.label}</span>
+                  ${stepObsIcon}
+                </div>
+                ${slotDatesHtml}
+                <div class="sector-breakdown-box">
+                  <span class="step-duration-tag">⏱️ Útil: ${formatDuration(stepUseful)}</span>
+                  ${stepExtra > 0 ? `<span class="step-extra-tag">🔥 Extra: ${formatDuration(stepExtra)}</span>` : ''}
+                  ${stepOff > 0 ? `<span class="step-off-tag">⛔ Fora Exp.: ${formatDuration(stepOff)}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        html += `</div>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+
+        document.getElementById(`total_time_done_${p.pedido}`).innerText = `🏆 Útil: ${formatDuration(totalUsefulMs)}`;
+        document.getElementById(`total_extra_done_${p.pedido}`).innerText = `🔥 Extra: ${formatDuration(totalExtraMs)}`;
+        document.getElementById(`total_off_done_${p.pedido}`).innerText = `⛔ Fora Exp.: ${formatDuration(totalOffShiftMs)}`;
+      });
+    }
+
+    function compileStepObsText(slots, stepLabel) {
+      if (!slots || !slots.length) return "";
+      let lines = [];
+      slots.forEach((s, idx) => {
+        if (s.obs && s.obs.trim() !== "") {
+          lines.push(`• Part ${idx + 1}: ${s.obs.trim()}`);
+        }
+      });
+      return lines.length > 0 ? lines.join("\n") : "";
+    }
+
+    function populateOrderSelect() {
+      const select = document.getElementById('selectOrderToEdit');
+      if (!select) return;
+      let currentVal = select.value;
+      select.innerHTML = `<option value="">-- Selecione na lista --</option>`;
+      db.filter(p => p.status === "Em Andamento").forEach(p => {
+        select.innerHTML += `<option value="${p.pedido}">Pedido #${p.pedido} - ${p.cliente}</option>`;
+      });
+      if (currentVal) select.value = currentVal;
+    }
+
+    function handleMainLogin(e) {
+      e.preventDefault();
+      const selectedId = parseInt(document.getElementById('loginUserSelect').value);
+      const passVal = document.getElementById('mainPassInput').value;
+      let found = usersDb.find(u => u.id === selectedId && u.pass === passVal);
+
+      if (found) {
+        activeUser = found;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboardApp').style.display = 'flex';
+        document.getElementById('currentUserBadge').innerText = `👤 Usuário: ${activeUser.name} (${activeUser.role})`;
+        addLog(`Realizou login no sistema`);
+        buildSidebarNav();
+        renderDashboard();
+        populateOrderSelect();
+        renderProcessManager();
+        renderUsersList();
+        renderLogs();
+        resetAutoSyncTimer();
+      } else {
+        alert("Senha incorreta!");
+      }
+    }
+
+    function logout() {
+      addLog(`Efetuou logout`);
+      activeUser = null;
+      document.getElementById('dashboardApp').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('mainPassInput').value = "";
+    }
+
+    function buildSidebarNav() {
+      const menu = document.getElementById('sideNavMenu');
+      menu.innerHTML = "";
+      const navItems = [
+        { id: 'tab-andamento', title: 'Em Andamento', desc: 'Acompanhamento em tempo real dos pedidos ativos', icon: '<svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>' },
+        { id: 'tab-concluidos', title: 'Consulta Concluídos', desc: 'Selecione múltiplos pedidos para comparar o tempo de execução', icon: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' },
+        { id: 'tab-atualizar', title: 'Editor de Registros', desc: 'Lançamento de novos pedidos e alteração de etapas ativas', icon: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' },
+        { id: 'tab-admin-settings', title: 'Configurações', desc: 'Jornada, usuários, etapas, calendário e logs', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>' }
+      ];
+
+      let isFirst = true;
+      navItems.forEach(item => {
+        if (activeUser.perms.includes(item.id)) {
+          let li = document.createElement('li');
+          li.innerHTML = `<button type="button" class="nav-btn ${isFirst ? 'active' : ''}" onclick="switchTab('${item.id}', this, '${item.title}', '${item.desc}')">${item.icon}${item.title}</button>`;
+          menu.appendChild(li);
+          if (isFirst) { switchTab(item.id, li.querySelector('button'), item.title, item.desc); isFirst = false; }
+        }
+      });
+
+      if (activeUser.role !== 'ADM') {
+        document.getElementById('userManagementCard').style.display = 'none';
+        document.getElementById('logsCard').style.display = 'none';
+        document.getElementById('processManagerCard').style.display = 'none';
+        document.getElementById('workScheduleCard').style.display = 'none';
+        document.getElementById('holidaysCard').style.display = 'none';
+      }
+    }
+
+    function toggleNewOrderAccordion() {
+      const content = document.getElementById('newOrderAccordionContent');
+      const arrow = document.getElementById('accordionArrow');
+      if (content.classList.contains('open')) { content.classList.remove('open'); arrow.innerText = '▼'; }
+      else { content.classList.add('open'); arrow.innerText = '▲'; }
+    }
+
+    function escapeJsString(str) {
+      if (!str) return '';
+      return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+    }
+
+    function resetAutoSyncTimer() {
+      if (autoSyncIntervalTimer) clearInterval(autoSyncIntervalTimer);
+      updateSyncTimestamp();
+      const valInput = parseInt(document.getElementById('syncValue').value) || 30;
+      const unitInput = document.getElementById('syncUnit').value;
+      let msMultiplier = 1000;
+      if (unitInput === 'min') msMultiplier = 1000 * 60;
+      else if (unitInput === 'hour') msMultiplier = 1000 * 60 * 60;
+
+      autoSyncIntervalTimer = setInterval(() => {
+        syncFromGoogleSheets();
+        updateSyncTimestamp();
+      }, valInput * msMultiplier);
+    }
+
+    function updateSyncTimestamp() {
+      const timeSpan = document.getElementById('lastSyncTime');
+      if (timeSpan) timeSpan.innerText = new Date().toLocaleTimeString('pt-BR');
+    }
+
+    function triggerManualSync() { syncFromGoogleSheets(true); }
+
+    function openObsPopover(headerText, bodyText) {
+      document.getElementById('obsPopoverHeader').innerText = headerText;
+      document.getElementById('obsPopoverText').innerText = bodyText;
+      document.getElementById('obsPopoverOverlay').style.display = 'flex';
+    }
+
+    function closeObsPopover(e) { if (e.target.id === 'obsPopoverOverlay') forceCloseObsPopover(); }
+    function forceCloseObsPopover() { document.getElementById('obsPopoverOverlay').style.display = 'none'; }
+
+    function setDeviceView(mode) {
+      const container = document.getElementById('appContainer');
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      if (mode === 'mobile') container.className = 'app-container mobile-mode';
+      else container.className = 'app-container';
+    }
+
+    function switchTab(tabId, btn, title, desc) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.add('active');
+      if (btn) btn.classList.add('active');
+      document.getElementById('pageTitleText').innerText = title;
+      document.getElementById('pageDescText').innerText = desc;
+    }
+
+    async function addLog(actionText) {
+      let now = new Date();
+      let dd = String(now.getDate()).padStart(2, '0');
+      let mm = String(now.getMonth() + 1).padStart(2, '0');
+      let yyyy = now.getFullYear();
+      let hh = String(now.getHours()).padStart(2, '0');
+      let min = String(now.getMinutes()).padStart(2, '0');
+      let ss = String(now.getSeconds()).padStart(2, '0');
+      
+      let formattedStr = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+      let uName = activeUser ? activeUser.name : 'Sistema';
+      
+      systemLogs.unshift({ dt: formattedStr, user: uName, action: actionText });
+      renderLogs();
+
+      await sendToAppsScript({ action: 'addLog', usuario: uName, detalhes: actionText });
+    }
+
+    function renderLogs() {
+      const box = document.getElementById('logsContainer');
+      const dateFilter = document.getElementById('logDateFilter') ? document.getElementById('logDateFilter').value : "";
+      if (!box) return;
+      box.innerHTML = "";
+
+      let filtered = systemLogs;
+      if (dateFilter) {
+        filtered = systemLogs.filter(l => {
+          if (!l.dt) return false;
+          let str = String(l.dt).trim();
+          let logDate = "";
+          if (str.includes('/')) {
+            let p = str.split(' ')[0].split('/');
+            if (p.length === 3) logDate = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+          } else if (str.includes('-')) {
+            let p = str.split(' ')[0].split('T')[0].split('-');
+            if (p.length === 3) logDate = `${p[0]}-${p[1].padStart(2, '0')}-${p[2].padStart(2, '0')}`;
+          }
+          return logDate === dateFilter;
+        });
+      }
+
+      if (filtered.length === 0) {
+        box.innerHTML = `<div style="color:var(--text-faint);">Nenhum log registrado.</div>`;
+        return;
+      }
+
+      filtered.forEach(l => {
+        box.innerHTML += `<div class="log-entry">[${l.dt}] <strong>${l.user}</strong>: ${l.action}</div>`;
+      });
+    }
+
+    function clearLogDateFilter() {
+      document.getElementById('logDateFilter').value = "";
+      renderLogs();
+    }
+
+    function renderUsersList() {
+      const box = document.getElementById('userListContainer');
+      if (!box) return;
+      box.innerHTML = "";
+      usersDb.forEach(u => {
+        let row = document.createElement('div');
+        row.className = 'process-item-row';
+        row.innerHTML = `
+          <div>
+            <strong>${u.name}</strong> <span style="font-size:0.7rem; color:var(--text-muted);">(${u.role})</span>
+            <div style="font-size:0.72rem; color:var(--accent);">Senha: <code>${u.pass}</code></div>
+          </div>
+          <div>
+            <button type="button" class="btn" style="padding:2px 6px;" onclick="editUser(${u.id})">✏️ Editar</button>
+            <button type="button" class="btn btn-danger" style="padding:2px 6px;" onclick="deleteUser(${u.id})" ${u.id === 1 ? 'disabled' : ''}>🗑️ Excluir</button>
+          </div>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    function editUser(id) {
+      let u = usersDb.find(x => x.id === id);
+      if (!u) return;
+      document.getElementById('editingUserId').value = u.id;
+      document.getElementById('newUserName').value = u.name;
+      document.getElementById('newUserPass').value = u.pass;
+      document.getElementById('newUserRole').value = u.role;
+
+      let perms = u.perms || [];
+      document.getElementById('perm_andamento').checked = perms.includes('tab-andamento');
+      document.getElementById('perm_concluidos').checked = perms.includes('tab-concluidos');
+      document.getElementById('perm_atualizar').checked = perms.includes('tab-atualizar');
+      document.getElementById('perm_settings').checked = perms.includes('tab-admin-settings');
+
+      document.getElementById('userFormTitle').innerText = "✏️ Editando Usuário: " + u.name;
+    }
+
+    function resetUserForm() {
+      document.getElementById('editingUserId').value = "";
+      document.getElementById('newUserName').value = "";
+      document.getElementById('newUserPass').value = "";
+      document.getElementById('newUserRole').value = "Usuário";
+      document.getElementById('perm_andamento').checked = true;
+      document.getElementById('perm_concluidos').checked = true;
+      document.getElementById('perm_atualizar').checked = true;
+      document.getElementById('perm_settings').checked = false;
+      document.getElementById('userFormTitle').innerText = "➕ Cadastrar / Editar Usuário";
+    }
+
+    async function saveUserFromForm() {
+      if (activeUser && activeUser.role !== 'ADM') return;
+      const btn = document.getElementById('btnSaveUser');
+      const editId = document.getElementById('editingUserId').value;
+      const name = document.getElementById('newUserName').value.trim();
+      const pass = document.getElementById('newUserPass').value.trim();
+      const role = document.getElementById('newUserRole').value;
+
+      if (!name || !pass) { alert("Preencha nome e senha."); return; }
+      
+      let perms = [];
+      if (document.getElementById('perm_andamento').checked) perms.push("tab-andamento");
+      if (document.getElementById('perm_concluidos').checked) perms.push("tab-concluidos");
+      if (document.getElementById('perm_atualizar').checked) perms.push("tab-atualizar");
+      if (document.getElementById('perm_settings').checked) perms.push("tab-admin-settings");
+
+      setBtnLoading(btn, true, "⏳ Salvando...", "💾 Salvar Usuário");
+
+      try {
+        if (editId) {
+          let u = usersDb.find(x => x.id === parseInt(editId));
+          if (u) { u.name = name; u.pass = pass; u.role = role; u.perms = perms; }
+        } else {
+          usersDb.push({ id: Date.now(), name, pass, role, perms });
+        }
+
+        localStorage.setItem('alvidros_users', JSON.stringify(usersDb));
+        resetUserForm();
+        initLoginSelect();
+        renderUsersList();
+        
+        await sendToAppsScript({ action: 'saveUsers', usuarios: usersDb });
+        alert("Usuário salvo com sucesso!");
+      } catch (err) {
+        console.error("Erro ao salvar usuário:", err);
+      } finally {
+        setBtnLoading(btn, false);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (activeUser && activeUser.role !== 'ADM') return;
+      if (confirm("Excluir este usuário?")) {
+        usersDb = usersDb.filter(u => u.id !== id);
+        localStorage.setItem('alvidros_users', JSON.stringify(usersDb));
+        initLoginSelect();
+        renderUsersList();
+
+        await sendToAppsScript({ action: 'saveUsers', usuarios: usersDb });
+      }
+    }
+
+    async function createNewOrderFromForm(e) {
+      if (e) e.preventDefault();
+      const num = document.getElementById('newPedNumber').value.trim();
+      const cli = document.getElementById('newPedClient').value.trim();
+      const obs = document.getElementById('newPedObs').value.trim();
+      const btn = document.getElementById('btnCreateNewOrder');
+
+      if (!num || !cli) { alert("Preencha número e cliente."); return; }
+
+      setBtnLoading(btn, true, "⏳ Cadastrando novo pedido...", "Cadastrar Novo Pedido");
+
+      try {
+        let newObj = { pedido: num, cliente: cli, obs: obs, status: "Em Andamento", etapas: {} };
+        db.push(newObj);
+        addLog(`Cadastrou novo Pedido #${num} (${cli})`);
+
+        await sendToAppsScript({
+          action: 'saveStepOnly',
+          pedido: num,
+          cliente: cli,
+          obsGeral: obs,
+          stepKey: '',
+          slots: [],
+          usuario: activeUser ? activeUser.name : 'Usuário'
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        isEditingActive = false;
+        await syncFromGoogleSheets(true);
+        isEditingActive = true;
+
+        populateOrderSelect();
+        document.getElementById('selectOrderToEdit').value = num;
+        loadOrderIntoEditor();
+        renderDashboard();
+        
+        document.getElementById('newPedNumber').value = "";
+        document.getElementById('newPedClient').value = "";
+        document.getElementById('newPedObs').value = "";
+        alert(`Pedido #${num} cadastrado com sucesso!`);
+      } catch (err) {
+        console.error("Erro ao cadastrar novo pedido:", err);
+      } finally {
+        setBtnLoading(btn, false);
+      }
+    }
+
+    async function deleteWholeCurrentOrder() {
+      if (activeUser.role !== 'ADM') return;
+      const btn = document.getElementById('btnDeleteWholeOrder');
+      const ped = document.getElementById('selectOrderToEdit').value;
+      if (!ped) return;
+      if (confirm(`Deseja excluir o Pedido #${ped} completamente?`)) {
+        setBtnLoading(btn, true, "⏳ Excluindo...", "💥 Excluir Pedido Completo (ADM)");
+        try {
+          let idx = db.findIndex(x => x.pedido === ped);
+          if (idx !== -1) {
+            db.splice(idx, 1);
+            addLog(`EXCLUIU COMPLETAMENTE o Pedido #${ped}`);
+            await sendToAppsScript({ action: 'deleteOrder', pedido: ped, usuario: activeUser.name });
+            
+            populateOrderSelect();
+            document.getElementById('editorPanel').style.display = "none";
+            renderDashboard();
+          }
+        } finally {
+          setBtnLoading(btn, false);
+        }
+      }
+    }
+
+    async function saveWorkScheduleOnly() {
+      const btn = document.getElementById('btnSaveWorkSchedule');
+      setBtnLoading(btn, true, "⏳ Salvando...", "💾 Salvar Jornada de Trabalho");
+      try {
+        let jornada = {
+          workStartWeek: document.getElementById('workStartWeek').value,
+          lunchStartWeek: document.getElementById('lunchStartWeek').value,
+          lunchEndWeek: document.getElementById('lunchEndWeek').value,
+          workEndWeek: document.getElementById('workEndWeek').value,
+          workStartFri: document.getElementById('workStartFri').value,
+          lunchStartFri: document.getElementById('lunchStartFri').value,
+          lunchEndFri: document.getElementById('lunchEndFri').value,
+          workEndFri: document.getElementById('workEndFri').value
+        };
+
+        await sendToAppsScript({ action: 'saveConfigSection', targetType: 'Jornada', jornada: jornada, usuario: activeUser ? activeUser.name : 'ADM' });
+        addLog(`Atualizou a Jornada de Trabalho`);
+        alert("Jornada de trabalho salva!");
+        await syncFromGoogleSheets();
+      } finally {
+        setBtnLoading(btn, false);
+      }
+    }
+
+    async function saveHolidaysOnly() {
+      const btn = document.getElementById('btnSaveHolidays');
+      setBtnLoading(btn, true, "⏳ Salvando...", "💾 Salvar Feriados e Folgas");
+      try {
+        await sendToAppsScript({ action: 'saveConfigSection', targetType: 'Feriado', feriados: customHolidays, usuario: activeUser ? activeUser.name : 'ADM' });
+        addLog(`Atualizou Feriados/Folgas`);
+        alert("Feriados e folgas salvos!");
+        await syncFromGoogleSheets();
+      } finally {
+        setBtnLoading(btn, false);
+      }
+    }
+
+    async function saveStepsOnly() {
+      const btn = document.getElementById('btnSaveSteps');
+      setBtnLoading(btn, true, "⏳ Salvando...", "💾 Salvar Etapas / Processos");
+      try {
+        await sendToAppsScript({ action: 'saveConfigSection', targetType: 'Etapa', etapas: stepConfig, usuario: activeUser ? activeUser.name : 'ADM' });
+        addLog(`Atualizou o Gerenciador de Etapas`);
+        alert("Etapas salvas!");
+        await syncFromGoogleSheets();
+      } finally {
+        setBtnLoading(btn, false);
+      }
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const field = document.getElementById(inputId);
+      if (field.type === 'password') { field.type = 'text'; btn.innerText = '🙈'; }
+      else { field.type = 'password'; btn.innerText = '👁️'; }
+    }
+  </script>
+</body>
+</html>
